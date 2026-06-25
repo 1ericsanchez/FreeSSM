@@ -1,5 +1,6 @@
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+macx:greaterThan(QT_MAJOR_VERSION, 4): QT += serialport
 CONFIG += debug_and_release	# warning: specifying EITHER release OR debug breaks the dll installation target on Windows !
 #CONFIG += small-resolution	# Uncomment this line if you want the project to be build for small resolution by default
 
@@ -8,6 +9,7 @@ TARGET = FreeSSM
 DESTDIR = ./
 DEPENDPATH += . src ui
 INCLUDEPATH += . src src/tinyxml
+VERSION = 1.2.5
 
 
 # Input
@@ -258,7 +260,7 @@ win32:INSTALLS += dllstarget platformstarget
 
 
 # OS-specific options
-unix {
+unix:!macx {
        DEPENDPATH += src/linux
        INCLUDEPATH += src/linux
        HEADERS += src/linux/serialCOM.h \
@@ -268,6 +270,35 @@ unix {
                   src/linux/TimeM.cpp \
                   src/linux/J2534_API.cpp
        LIBS += -ldl -lrt
+}
+
+macx {
+       QMAKE_INFO_PLIST = resources/macos/Info.plist
+       DEPENDPATH += src/macos
+       INCLUDEPATH += src/macos
+       HEADERS += src/macos/serialCOM.h \
+                  src/macos/TimeM.h \
+                  src/macos/J2534_API.h
+       SOURCES += src/macos/serialCOM.cpp \
+                  src/macos/TimeM.cpp \
+                  src/macos/J2534_API.cpp
+
+       macos_runtime.files = background.png \
+                             LiberationSans-Regular.ttf \
+                             LiberationSans-Bold.ttf \
+                             LiberationSans-Italic.ttf \
+                             LiberationSans-BoldItalic.ttf \
+                             FreeSSM_en.qm \
+                             FreeSSM_de.qm \
+                             FreeSSM_tr.qm
+       macos_runtime.path = Contents/MacOS
+       macos_runtime.CONFIG += no_check_exist
+
+       macos_definitions.files = $$files(definitions/SSM1defs_*.xml) \
+                                 definitions/J2534libs.xml
+       macos_definitions.path = Contents/MacOS/definitions
+
+       QMAKE_BUNDLE_DATA += macos_runtime macos_definitions
 }
 
 win32 {
